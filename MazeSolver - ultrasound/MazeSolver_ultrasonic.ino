@@ -4,6 +4,9 @@
 #include "TRSensors.h"
 #include <Wire.h>
 
+#define ECHO 2 // ultrasonic echo
+#define TRIG 3 // ultrasonic trigger
+
 #define PWMA 6  //Left Motor Speed pin (ENA)
 #define AIN2 A0 //Motor-L forward (IN2).
 #define AIN1 A1 //Motor-L backward (IN1)
@@ -15,6 +18,70 @@
 #define OLED_RESET 9
 #define OLED_SA0 8
 #define Addr 0x20
+
+// Poniższe dwie funkcje wzięte z repozytorium autorstwa Blagoj Hristov'a
+
+void lights(int led_1[3], int led_2[3], int led_3[3], int led_4[3])
+{
+  RGB.begin();
+
+  RGB.setPixelColor(0, RGB.Color(led_1[0], led_1[1], led_1[2])); // set colour of first LED
+  RGB.setPixelColor(1, RGB.Color(led_2[0], led_2[1], led_2[2])); // set colour of second LED
+  RGB.setPixelColor(2, RGB.Color(led_3[0], led_3[1], led_3[2])); // set colour of third LED
+  RGB.setPixelColor(3, RGB.Color(led_4[0], led_4[1], led_4[2])); // set colour of fourth LED
+
+  RGB.show(); // turn on LEDs
+}
+
+int read_ultrasonic(bool verbose = false)
+{
+  int length = 15; // number of measurements
+  int measurements[length];
+  float f_dist;
+
+  for (int i = 0; i < length; i++)
+  {                          // measure 'length' times for better accuracy
+    digitalWrite(TRIG, LOW); // set trig pin to low for 2μs (reset trigger)
+    delayMicroseconds(2);
+
+    digitalWrite(TRIG, HIGH); // set trig pin to high for 10μs (generate ultrasonic sound wave)
+    delayMicroseconds(10);
+
+    digitalWrite(TRIG, LOW); // set trig pin to low (stop generating ultrasonic sound wave)
+
+    f_dist = pulseIn(ECHO, HIGH); // read echo pin (time for wave to bounce back)
+    f_dist = f_dist / 58;         // Y m=（X s*344）/2; X s=（ 2*Y m）/344 ==》X s=0.0058*Y m ==》cm = us /58
+
+    *(measurements + i) = (int)f_dist;
+  }
+
+  sort(measurements, length); // sort measurements array
+
+  int distance = 0; // set initial measurement to 0
+
+  if (*measurements < 6) // if minimum measurement is < 6cm, then get the minimum (for avoiding errors)
+    distance = *measurements;
+  else
+    distance = *(measurements + (int)length / 2); // if the measurement is > 6cm, get the middle measurement
+
+  if (verbose)
+  { // print result
+
+    if ((distance < 3) || (distance > 400))
+    { // ultrasonic range ranging 3cm to 400cm
+
+      Serial.println("ERROR! OUT OF RANGE! ==》Ultrasonic range: 3cm - 400cm");
+    }
+    else
+    {
+      Serial.println("Distance = ");
+      Serial.print(distance);
+      Serial.println("cm");
+    }
+  }
+
+  return distance;
+}
 
 Adafruit_SSD1306 display(OLED_RESET, OLED_SA0);
 
