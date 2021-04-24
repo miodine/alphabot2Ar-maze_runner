@@ -49,6 +49,7 @@ unsigned char path_length = 0; // the length of the path
 const int fs_turn_rate = 100; 
 
 
+
 void PCF8574Write(byte data)
 {
   Wire.beginTransmission(Addr);
@@ -66,7 +67,6 @@ byte PCF8574Read()
   }
   return data;
 }
-
 
 
 void sort(int *arr, int n){     // function for sorting arrays
@@ -185,11 +185,11 @@ int read_ultrasonic(bool verbose = false)
 }
 
 
-
 // Path simplification.  The strategy is that whenever we encounter a
 // sequence xBx, we can simplify it by cutting out the dead end.  For
 // example, LBL -> S, because a single S bypasses the dead end
 // represented by LBL.
+
 void simplify_path()
 {
   // only simplify the path if the second-to-last turn was a 'B'
@@ -240,7 +240,6 @@ void simplify_path()
 
 
 //MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY 
-
 
 void SetSpeeds(int Aspeed, int Bspeed)
 {
@@ -324,7 +323,7 @@ void m_stop()
 void m_ninety_right()
 {
   m_right()
-  delay(50); //adjust
+  delay(50); //adjust 
 }
 
 void m_ninety_left()
@@ -333,16 +332,6 @@ void m_ninety_left()
   delay(50); //adjust
 }
 
-
-
-
-
-
-
-
-
-
-
 //MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY 
 
 
@@ -350,9 +339,12 @@ void m_ninety_left()
 // it detects an intersection, a dead end, or the finish.
 void follow_segment()
 {
-  SetSpeeds()
+  SetSpeeds();
   while (1)
   {
+
+    //CODE: compensation routines 
+
     if (millis() - lasttime > 100)
     {
       if(read_ultrasonic(false) < 4) return;
@@ -372,7 +364,7 @@ void turn(unsigned char dir)
     case 'L':
       // Turn left.
       SetSpeeds(-100, 100);
-      delay(190);
+      delay(190); 
       break;
     case 'R':
       // Turn right.
@@ -382,7 +374,7 @@ void turn(unsigned char dir)
     case 'B':
       // Turn around.
       SetSpeeds(100, -100);
-      delay(400);
+      delay(400); 
       break;
     case 'S':
       // Don't do anything!
@@ -564,37 +556,11 @@ void loop()
     unsigned char found_straight = 0;
     unsigned char found_right = 0;
 
-    // Now read the sensors and check the intersection type.
-    trs.readLine(sensorValues);
+    
+    //CODE: TURN 360, SEE WHERE YOU CAN GO  
+  
 
-    // Check for left and right exits.
-    if (sensorValues[0] > 600)
-      found_left = 1;
-    if (sensorValues[4] > 600)
-      found_right = 1;
-
-    // Drive straight a bit more - this is enough to line up our
-    // wheels with the intersection.
-    SetSpeeds(30, 30);
-    delay(100);
-
-    // Check for a straight exit.
-    trs.readLine(sensorValues);
-    if (sensorValues[1] > 600 || sensorValues[2] > 600 || sensorValues[3] > 600)
-      found_straight = 1;
-
-    // Check for the ending spot.
-    // If all three middle sensors are on dark black, we have
-    // solved the maze.
-    if (sensorValues[1] > 600 && sensorValues[2] > 600 && sensorValues[3] > 600)
-    {
-      SetSpeeds(0, 0);
-      break;
-    }
-
-    // Intersection identification is complete.
-    // If the maze has been solved, we can follow the existing
-    // path.  Otherwise, we need to learn the solution.
+    
     unsigned char dir = select_turn(found_left, found_straight, found_right);
 
     // Make the turn indicated by the path.
