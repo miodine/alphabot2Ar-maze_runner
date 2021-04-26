@@ -1,18 +1,15 @@
+//begin: move to the common header file
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
 #include <TRSensors.h>
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
-
 #include <Wire.h>
 
 #define ECHO 2 // ultrasonic echo
 #define TRIG 3 // ultrasonic trigger
-
 #define OLED_RESET 9 // OLED display reset pin
 #define OLED_SA0 8   // OLED display set pin
-
 #define PWMA 6  //Left Motor Speed pin (ENA)
 #define AIN2 A0 //Motor-L forward (IN2).
 #define AIN1 A1 //Motor-L backward (IN1)
@@ -22,15 +19,93 @@
 #define PIN 7 //led pin
 #define NUM_SENSORS 5
 #define OLED_RESET 9
-
 #define OLED_SA0 8
 #define Addr 0x20
 
 
+
+void sort(int *arr, int n){     // function for sorting arrays
+    int tmp;
+    for(int i = 0; i < n; i++){
+        for(int j = i; j < n; j++){
+            if (*(arr + j) < *(arr + i)){
+                tmp = *(arr + i);
+                *(arr + i) = *(arr + j);
+                *(arr + j) = tmp;
+            }
+            else{
+                continue;
+            }
+        }
+    }
+}
+
+void lights(int led_1[3], int led_2[3], int led_3[3], int led_4[3]){
+  RGB.begin();
+
+  RGB.setPixelColor(0, RGB.Color(led_1[0], led_1[1], led_1[2])); // set colour of first LED
+  RGB.setPixelColor(1, RGB.Color(led_2[0], led_2[1], led_2[2])); // set colour of second LED
+  RGB.setPixelColor(2, RGB.Color(led_3[0], led_3[1], led_3[2])); // set colour of third LED
+  RGB.setPixelColor(3, RGB.Color(led_4[0], led_4[1], led_4[2])); // set colour of fourth LED
+
+  RGB.show(); // m_turn on LEDs
+}
+// Path simplification.  The strategy is that whenever we encounter a
+// sequence xBx, we can simplify it by cutting out the dead end.  For
+// example, LBL -> S, because a single S bypasses the dead end
+// represented by LBL.
+void simplify_path(){
+
+
+  // only simplify the path if the second-to-last m_turn was a 'B'
+  if (path_length < 3 || path[path_length - 2] != 'B')
+    return;
+
+  int total_angle = 0;
+  int i;
+  for (i = 1; i <= 3; i++)
+  {
+    switch (path[path_length - i])
+    {
+    case 'R':
+      total_angle += 90;
+      break;
+    case 'L':
+      total_angle += 270;
+      break;
+    case 'B':
+      total_angle += 180;
+      break;
+    }
+  }
+
+  // Get the angle as a number between 0 and 360 degrees.
+  total_angle = total_angle % 360;
+
+  // Replace all of those turns with a single one.
+  switch (total_angle)
+  {
+  case 0:
+    path[path_length - 3] = 'S';
+    break;
+  case 90:
+    path[path_length - 3] = 'R';
+    break;
+  case 180:
+    path[path_length - 3] = 'B';
+    break;
+  case 270:
+    path[path_length - 3] = 'L';
+    break;
+  }
+
+  // The path is now two steps shorter.
+  path_length -= 2;
+}
+
+//note: this type of initialisation should work in cpp, but I'm not entirely sure
 Adafruit_NeoPixel RGB = Adafruit_NeoPixel(4, PIN, NEO_GRB + NEO_KHZ800); // setup RGB LEDs
 Adafruit_SSD1306 display(OLED_RESET, OLED_SA0);
-
-
 TRSensors trs = TRSensors();
 unsigned int sensorValues[NUM_SENSORS];
 unsigned int position;
@@ -38,18 +113,17 @@ uint16_t i, j;
 byte value;
 unsigned long lasttime = 0;
 
-void PCF8574Write(byte data);
-byte PCF8574Read();
-uint32_t Wheel(byte WheelPos);
-
 char path[100] = "";
 unsigned char path_length = 0; // the length of the path
-
-
 const int fs_turn_rate = 100; 
 
+//end: move to the common header file
 
 
+
+
+
+//begin: sensors
 void PCF8574Write(byte data)
 {
   Wire.beginTransmission(Addr);
@@ -66,24 +140,6 @@ byte PCF8574Read()
     data = Wire.read();
   }
   return data;
-}
-
-
-void sort(int *arr, int n){     // function for sorting arrays
-    int tmp;
-
-    for(int i = 0; i < n; i++){
-        for(int j = i; j < n; j++){
-            if (*(arr + j) < *(arr + i)){
-                tmp = *(arr + i);
-                *(arr + i) = *(arr + j);
-                *(arr + j) = tmp;
-            }
-            else{
-                continue;
-            }
-        }
-    }
 }
 
 char read_infrared(bool verbose=false){
@@ -122,17 +178,6 @@ char read_infrared(bool verbose=false){
         Serial.println("ERROR!");
 }
 
-void lights(int led_1[3], int led_2[3], int led_3[3], int led_4[3])
-{
-  RGB.begin();
-
-  RGB.setPixelColor(0, RGB.Color(led_1[0], led_1[1], led_1[2])); // set colour of first LED
-  RGB.setPixelColor(1, RGB.Color(led_2[0], led_2[1], led_2[2])); // set colour of second LED
-  RGB.setPixelColor(2, RGB.Color(led_3[0], led_3[1], led_3[2])); // set colour of third LED
-  RGB.setPixelColor(3, RGB.Color(led_4[0], led_4[1], led_4[2])); // set colour of fourth LED
-
-  RGB.show(); // turn on LEDs
-}
 
 int read_ultrasonic(bool verbose = false)
 {
@@ -185,61 +230,14 @@ int read_ultrasonic(bool verbose = false)
 }
 
 
-// Path simplification.  The strategy is that whenever we encounter a
-// sequence xBx, we can simplify it by cutting out the dead end.  For
-// example, LBL -> S, because a single S bypasses the dead end
-// represented by LBL.
-
-void simplify_path()
-{
-  // only simplify the path if the second-to-last turn was a 'B'
-  if (path_length < 3 || path[path_length - 2] != 'B')
-    return;
-
-  int total_angle = 0;
-  int i;
-  for (i = 1; i <= 3; i++)
-  {
-    switch (path[path_length - i])
-    {
-    case 'R':
-      total_angle += 90;
-      break;
-    case 'L':
-      total_angle += 270;
-      break;
-    case 'B':
-      total_angle += 180;
-      break;
-    }
-  }
-
-  // Get the angle as a number between 0 and 360 degrees.
-  total_angle = total_angle % 360;
-
-  // Replace all of those turns with a single one.
-  switch (total_angle)
-  {
-  case 0:
-    path[path_length - 3] = 'S';
-    break;
-  case 90:
-    path[path_length - 3] = 'R';
-    break;
-  case 180:
-    path[path_length - 3] = 'B';
-    break;
-  case 270:
-    path[path_length - 3] = 'L';
-    break;
-  }
-
-  // The path is now two steps shorter.
-  path_length -= 2;
-}
 
 
-//MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY 
+
+
+
+
+
+//begin: mobility
 
 void SetSpeeds(int Aspeed, int Bspeed)
 {
@@ -332,12 +330,11 @@ void m_ninety_left()
   delay(50); //adjust
 }
 
-//MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY MOBILITY 
 
 
 // This function, causes the 3pi to follow a segment of the maze until
 // it detects an intersection, a dead end, or the finish.
-void follow_segment()
+void m_follow_segment()
 {
   SetSpeeds();
   while (1)
@@ -355,7 +352,7 @@ void follow_segment()
 // Code to perform various types of turns according to the parameter dir,
 // which should be 'L' (left), 'R' (right), 'S' (straight), or 'B' (back).
 // The delays here had to be calibrated for the 3pi's motors.
-void turn(unsigned char dir)
+void m_turn(unsigned char dir)
 {
   // if(millis() - lasttime >500)
   {
@@ -393,15 +390,15 @@ void turn(unsigned char dir)
   lasttime = millis();
 }
 
-// This function decides which way to turn during the learning phase of
+// This function decides which way to m_turn during the learning phase of
 // maze solving.  It uses the variables found_left, found_straight, and
 // found_right, which indicate whether there is an exit in each of the
 // three directions, applying the "left hand on the wall" strategy.
-unsigned char select_turn(unsigned char found_left, unsigned char found_straight, unsigned char found_right)
+unsigned char m_select_turn(unsigned char found_left, unsigned char found_straight, unsigned char found_right)
 {
-  // Make a decision about how to turn.  The following code
+  // Make a decision about how to m_turn.  The following code
   // implements a left-hand-on-the-wall strategy, where we always
-  // turn as far to the left as possible.
+  // m_turn as far to the left as possible.
   if (found_left)
     return 'L';
   else if (found_straight)
@@ -413,22 +410,27 @@ unsigned char select_turn(unsigned char found_left, unsigned char found_straight
 }
 
 
+//end: mobility
+
 
 //CONFIG
 
 // The path variable will store the path that the robot has taken.  It
 // is stored as an array of characters, each of which represents the
-// turn that should be made at one intersection in the sequence:
+// m_turn that should be made at one intersection in the sequence:
 //  'L' for left
 //  'R' for right
 //  'S' for straight (going straight through an intersection)
-//  'B' for back (U-turn)
+//  'B' for back (U-m_turn)
 //
-// Whenever the robot makes a U-turn, the path can be simplified by
+// Whenever the robot makes a U-m_turn, the path can be simplified by
 // removing the dead end.  The follow_next_turn() function checks for
-// this case every time it makes a turn, and it simplifies the path
+// this case every time it makes a m_turn, and it simplifies the path
 // appropriately.
 
+
+
+//begin: leave as it is 2
 
 void setup()
 {
@@ -540,7 +542,7 @@ void loop()
 {
   while (1)
   {
-    follow_segment();
+    m_follow_segment();
 
     // Drive straight a bit.  This helps us in case we entered the
     // intersection at an angle.
@@ -561,10 +563,10 @@ void loop()
   
 
     
-    unsigned char dir = select_turn(found_left, found_straight, found_right);
+    unsigned charm_ dir = m_select_turn(found_left, found_straight, found_right);
 
-    // Make the turn indicated by the path.
-    turn(dir);
+    // Make the m_turn indicated by the path.
+    m_turn(dir);
 
     // Store the intersection in the path variable.
     path[path_length] = dir;
@@ -631,7 +633,7 @@ void loop()
     int i;
     for (i = 0; i < path_length; i++)
     {
-      follow_segment();
+      m_follow_segment();
 
       // Drive straight while slowing down, as before.
       SetSpeeds(30, 30);
@@ -639,17 +641,17 @@ void loop()
       SetSpeeds(30, 30);
       delay(150);
 
-      // Make a turn according to the instruction stored in
+      // Make a m_turn according to the instruction stored in
       // path[i].
-      turn(path[i]);
+      m_turn(path[i]);
     }
 
     // Follow the last segment up to the finish.
-    follow_segment();
+    m_follow_segment();
 
     // Now we should be at the finish!  Restart the loop.
   }
 }
 
-
+//end: leave as it is 2
 
