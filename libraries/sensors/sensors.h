@@ -31,4 +31,27 @@ char read_infrared(bool verbose=false);
  */
 int read_ultrasonic(bool verbose = false);
 
+/*
+*  
+*
+*/
+int read_srange_analog_left();
+/*
+*
+*
+*/
+int read_srange_analog_right();
+
+/*
+*
+*
+*/
+int read_lrange_binary_left();
+/*
+*
+*
+*/
+int read_lrange_binary_right();
+
+
 #endif // SENSORS_H

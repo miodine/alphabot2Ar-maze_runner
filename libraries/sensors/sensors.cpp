@@ -1,14 +1,12 @@
 #include "sensors.h"
 
-void PCF8574Write(byte data)
-{
+void PCF8574Write(byte data){
   Wire.beginTransmission(Addr);
   Wire.write(data);
   Wire.endTransmission();
 }
 
-byte PCF8574Read()
-{
+byte PCF8574Read(){
   int data = -1;
   Wire.requestFrom(Addr, 1);
   if (Wire.available())
@@ -53,8 +51,7 @@ char read_infrared(bool verbose){
         Serial.println("ERROR!");
 }
 
-int read_ultrasonic(bool verbose)
-{
+int read_ultrasonic(bool verbose){
   int length = 15; // number of measurements
   int measurements[length];
   float f_dist;
@@ -101,4 +98,22 @@ int read_ultrasonic(bool verbose)
   }
 
   return distance;
+}
+
+
+int read_srange_analog_left(){
+  return analogRead(SH_RNG_ADC_LEFT);
+}
+
+int read_srange_analog_right(){
+  return analogRead(SH_RNG_ADC_RIGHT);
+}
+
+
+int read_lrange_binary_left(){
+    return digitalRead(LO_RNG_B_LEFT);
+}
+
+int read_lrange_binary_right(){
+    return digitalRead(LO_RNG_B_RIGHT);
 }

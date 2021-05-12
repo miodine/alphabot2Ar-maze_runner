@@ -82,27 +82,31 @@ void m_stop()
 void m_ninety_right()
 {
   m_right();
-  delay(50); //adjust
+  delay(290); //adjust
 }
 
 void m_ninety_left()
 {
   m_right();
-  delay(50); //adjust
+  delay(290); //adjust
 }
 
 void m_follow_segment()
 {
-  //SetSpeeds();
+  m_forward();
+
+
   while (1)
   {
 
     //CODE: compensation routines
 
-    //if (millis() - lasttime > 100)
-    {
-      if(read_ultrasonic(false) < 4) return;
-    }
+    
+    
+    if(read_ultrasonic(false) < 4) return;
+    if(read_lrange_binary_left() == LOW) return;
+    if(read_lrange_binary_right() == LOW) return; 
+
   }
 }
 
@@ -114,18 +118,24 @@ void m_turn(unsigned char dir)
     {
     case 'L':
       // Turn left.
-      SetSpeeds(-100, 100);
-      delay(190);
+      //SetSpeeds(-100, 100);
+      //delay(190);
+      m_ninety_left();
+      
       break;
     case 'R':
       // Turn right.
-      SetSpeeds(100, -100);
-      delay(190);
+      //SetSpeeds(100, -100);
+      //delay(190);
+      m_ninety_right();
+
       break;
     case 'B':
       // Turn around.
-      SetSpeeds(100, -100);
-      delay(400);
+      //SetSpeeds(100, -100);
+      //delay(400);
+      m_ninety_left();
+      m_ninety_left();
       break;
     case 'S':
       // Don't do anything!

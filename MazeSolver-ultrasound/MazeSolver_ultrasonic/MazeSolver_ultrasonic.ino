@@ -2,6 +2,14 @@
 
 #include "mobility.h"
 
+
+unsigned char found_left;
+unsigned char found_straight;
+unsigned char found_right;
+
+unsigned char dir;
+int ult_dist_readout;
+
 void setup()
 {
   delay(1000);
@@ -14,6 +22,13 @@ void setup()
   pinMode(PWMB, OUTPUT);
   pinMode(AIN1, OUTPUT);
   pinMode(AIN2, OUTPUT);
+
+
+  //Initialisation of the long-range sensors
+  pinMode(LO_RNG_B_LEFT, INPUT);
+  pinMode(LO_RNG_B_LEFT, INPUT);
+
+
   SetSpeeds(0, 0);
   // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // initialize with the I2C addr 0x3D (for the 128x64)
@@ -51,22 +66,6 @@ void setup()
   //  analogWrite(PWMB,60);
   for (int i = 0; i < 100; i++) // make the calibration take about 10 seconds
   {
-    if (i < 25 || i >= 75)
-    {
-      //      digitalWrite(AIN2,HIGH);
-      //      digitalWrite(AIN1,LOW);
-      //      digitalWrite(BIN1,LOW);
-      //      digitalWrite(BIN2,HIGH);
-      SetSpeeds(80, -80);
-    }
-    else
-    {
-      //      digitalWrite(AIN2,LOW);
-      //      digitalWrite(AIN1,HIGH);
-      //      digitalWrite(BIN1,HIGH);
-      //      digitalWrite(BIN2,LOW);
-      SetSpeeds(-80, 80);
-    }
     trs.calibrate(); // reads all sensors 100 times
   }
   SetSpeeds(0, 0);
@@ -112,28 +111,25 @@ void loop()
 {
   while (1)
   {
-    m_follow_segment();
+    m_follow_segment();  // exit if found an intersection
+    m_stop();            // stop the robot
 
-    // Drive straight a bit.  This helps us in case we entered the
-    // intersection at an angle.
-    // Note that we are slowing down - this prevents the robot
-    // from tipping forward too much.
-    SetSpeeds(30, 30);
-    delay(40);
 
     // These variables record whether the robot has seen a line to the
     // left, straight ahead, and right, whil examining the current
     // intersection.
-    unsigned char found_left = 0;
-    unsigned char found_straight = 0;
-    unsigned char found_right = 0;
+    found_left = 0;
+    found_straight = 0;
+    found_right = 0;
 
-    
-    //CODE: TURN 360, SEE WHERE YOU CAN GO  
-  
+    if(read_ultrasonic(false) > 10) found_straight = 1;
+    if(read_lrange_binary_left() == LOW) found_left = 1;
+    if(read_lrange_binary_right() == LOW) found_right = 1;
 
-    
-    unsigned char dir = m_select_turn(found_left, found_straight, found_right);
+    //SetSpeeds(30, 30);
+    //delay(40);
+
+    dir = m_select_turn(found_left, found_straight, found_right);
 
     // Make the m_turn indicated by the path.
     m_turn(dir);
@@ -159,35 +155,10 @@ void loop()
   // times as we want to.
   while (1)
   {
-    // Beep to show that we solved the maze.
     SetSpeeds(0, 0);
-    // OrangutanBuzzer::play(">>a32");
+
     Serial.println("End !!!");
-    // Wait for the user to press a button, while displaying
-    // the solution.
-    //    while (!OrangutanPushbuttons::isPressed(BUTTON_B))
-    //    {
-    //      if (millis() % 2000 < 1000)
-    //      {
-    //        OrangutanLCD::clear();
-    //        OrangutanLCD::print("Solved!");
-    //        OrangutanLCD::gotoXY(0, 1);
-    //        OrangutanLCD::print("Press B");
-    //      }
-    //      else
-    //        display_path();
-    //      delay(30);
-    //    }
-    //    while (OrangutanPushbuttons::isPressed(BUTTON_B));
-    //    display.clearDisplay();
-    //    display.setTextSize(2);
-    //    display.setTextColor(WHITE);
-    //    display.setCursor(20,0);
-    //    display.println("AlhpaBot");
-    //    display.setTextSize(3);
-    //    display.setCursor(40,30);
-    //    display.println("Go!");
-    //    display.display();
+
     delay(500);
 
     value = 0;

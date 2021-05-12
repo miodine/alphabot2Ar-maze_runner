@@ -18,10 +18,18 @@
 #define BIN1 A2         //Motor-R forward (IN3)
 #define BIN2 A3         //Motor-R backward (IN4)
 #define PIN 7           //LED pin
-#define NUM_SENSORS 5
+
+#define NUM_SENSORS 5   //IR bottom sensors
 #define OLED_RESET 9
 #define OLED_SA0 8
 #define Addr 0x20
+
+#define SH_RNG_ADC_LEFT A4    //Short-range analogue IR sensor input pin - left side 
+#define SH_RNG_ADC_RIGHT A5   //Short-range analogue IR sensor input pin - right side
+
+#define LO_RNG_B_LEFT 10       //Long-range binary IR sensor input pin - left side
+#define LO_RNG_B_RIGHT 11      //Long-range binary IR sensor input pin - right side
+
 
 extern Adafruit_NeoPixel RGB;
 extern Adafruit_SSD1306 display;
@@ -33,6 +41,9 @@ extern unsigned long lasttime;
 extern unsigned int position;
 extern uint16_t i, j;
 extern byte value;
+
+
+
 
 // The path variable will store the path that the robot has taken.  It
 // is stored as an array of characters, each of which represents the
