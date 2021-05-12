@@ -24,11 +24,11 @@
 #define OLED_SA0 8
 #define Addr 0x20
 
-#define SH_RNG_ADC_LEFT A4    //Short-range analogue IR sensor input pin - left side 
-#define SH_RNG_ADC_RIGHT A5   //Short-range analogue IR sensor input pin - right side
+#define SH_RNG_ADC_LEFT A5    //Short-range analogue IR sensor input pin - left side 
+#define SH_RNG_ADC_RIGHT A4   //Short-range analogue IR sensor input pin - right side
 
-#define LO_RNG_B_LEFT 10       //Long-range binary IR sensor input pin - left side
-#define LO_RNG_B_RIGHT 11      //Long-range binary IR sensor input pin - right side
+#define LO_RNG_B_LEFT 11       //Long-range binary IR sensor input pin - left side
+#define LO_RNG_B_RIGHT 10      //Long-range binary IR sensor input pin - right side
 
 
 extern Adafruit_NeoPixel RGB;
