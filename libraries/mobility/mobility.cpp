@@ -103,7 +103,7 @@ void m_follow_segment()
 
     
     
-    if(read_ultrasonic(false) < 4) return;
+    if(read_ultrasonic(true) < 4) return;
     if(read_lrange_binary_left() == LOW) return;
     if(read_lrange_binary_right() == LOW) return; 
 
