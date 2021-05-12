@@ -52,7 +52,7 @@ char read_infrared(bool verbose){
 }
 
 int read_ultrasonic(bool verbose){
-  int length = 15; // number of measurements
+  int length = 5;   // number of measurements
   int measurements[length];
   float f_dist;
 
