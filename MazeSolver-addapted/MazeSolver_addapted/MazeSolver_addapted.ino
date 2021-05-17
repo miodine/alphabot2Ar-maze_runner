@@ -106,14 +106,12 @@ void setup()
   delay(500);
 }
 
-
 void loop()
 {
   while (1)
   {
     m_follow_segment();  // exit if found an intersection
     m_stop();            // stop the robot
-
 
     // These variables record whether the robot has seen a line to the
     // left, straight ahead, and right, whil examining the current
@@ -122,17 +120,22 @@ void loop()
     found_straight = 0;
     found_right = 0;
 
-    if(read_ultrasonic(false) > 10) found_straight = 1;
-    if(read_lrange_binary_left() == LOW) found_left = 1;
-    if(read_lrange_binary_right() == LOW) found_right = 1;
+    if(read_binary_front() == 1) found_straight = 1;
+    if(read_lrange_binary_left() == HIGH) found_left = 1;
+    if(read_lrange_binary_right() == HIGH) found_right = 1;
 
-    //SetSpeeds(30, 30);
-    //delay(40);
 
     dir = m_select_turn(found_left, found_straight, found_right);
 
     // Make the m_turn indicated by the path.
     m_turn(dir);
+
+
+    //Podjedz troche, żeby nie łapać poprzednich odczytów.
+    SetSpeeds(30, 30);
+    delay(200);
+    m_stop();
+
 
     // Store the intersection in the path variable.
     path[path_length] = dir;
@@ -187,9 +190,10 @@ void loop()
       m_turn(path[i]);
     }
 
+
+
     // Follow the last segment up to the finish.
     m_follow_segment();
-
     // Now we should be at the finish!  Restart the loop.
   }
 }

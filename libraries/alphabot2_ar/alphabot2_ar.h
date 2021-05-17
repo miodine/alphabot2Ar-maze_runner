@@ -26,7 +26,6 @@
 
 #define SH_RNG_ADC_LEFT A5    //Short-range analogue IR sensor input pin - left side 
 #define SH_RNG_ADC_RIGHT A4   //Short-range analogue IR sensor input pin - right side
-
 #define LO_RNG_B_LEFT 11       //Long-range binary IR sensor input pin - left side
 #define LO_RNG_B_RIGHT 10      //Long-range binary IR sensor input pin - right side
 

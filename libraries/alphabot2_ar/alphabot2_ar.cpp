@@ -15,7 +15,7 @@ char path[100] = "";            // array for remembering the path
 unsigned char path_length = 0;  // initial value for the length of the path
 
 const int fs_turn_rate = 100;
-int Speed = 50;
+int Speed = 30;
 
 void sort(int *arr, int n){     // function for sorting arrays
     int tmp;

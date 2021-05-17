@@ -32,26 +32,36 @@ char read_infrared(bool verbose=false);
 int read_ultrasonic(bool verbose = false);
 
 /*
-*  
+* Read the infrared short range sensor value.
 *
 */
 int read_srange_analog_left();
+
 /*
-*
+* Read the infrared short range sensor value.
 *
 */
 int read_srange_analog_right();
 
 /*
-*
+* Read the infrared short range sensor value.
 *
 */
 int read_lrange_binary_left();
+
 /*
-*
+* Read the infrared long range sensor value.
 *
 */
 int read_lrange_binary_right();
+
+/*
+* Detect obstacles using binary IR sensors
+* 
+* @return int - 1 if detected obstacle, 0 otherwise
+*/
+
+int read_binary_front();
 
 
 #endif // SENSORS_H
