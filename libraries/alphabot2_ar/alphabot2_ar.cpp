@@ -1,10 +1,13 @@
 #include "alphabot2_ar.h"
 
-Adafruit_NeoPixel RGB = Adafruit_NeoPixel(4, PIN, NEO_GRB + NEO_KHZ800); // setup RGB LEDs
-Adafruit_SSD1306 display(OLED_RESET, OLED_SA0);
+//Adafruit_NeoPixel RGB = Adafruit_NeoPixel(4, PIN, NEO_GRB + NEO_KHZ800); // setup RGB LEDs
+//Adafruit_SSD1306 display(OLED_RESET, OLED_SA0);
 
-TRSensors trs = TRSensors();                 // declare line sensors as TRSensor type object
-unsigned int sensorValues[NUM_SENSORS];      // declare global array for line sensor values
+//TRSensors trs = TRSensors();                 // declare line sensors as TRSensor type object
+//unsigned int sensorValues[NUM_SENSORS];      // declare global array for line sensor values
+
+
+
 
 unsigned long lasttime = 0;     // initial value for measuring passed time [ms]
 unsigned int position;
@@ -14,7 +17,6 @@ byte value;
 char path[100] = "";            // array for remembering the path
 unsigned char path_length = 0;  // initial value for the length of the path
 
-const int fs_turn_rate = 100;
 int Speed = 30;
 
 void sort(int *arr, int n){     // function for sorting arrays

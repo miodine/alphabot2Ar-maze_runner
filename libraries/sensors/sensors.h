@@ -2,6 +2,9 @@
 #define SENSORS_H
 
 #include "alphabot2_ar.h"
+
+
+
 /*
  * Write to the PCF8574 I/O expansion module.
  *
@@ -61,7 +64,6 @@ int read_lrange_binary_right();
 * @return int - 1 if detected obstacle, 0 otherwise
 */
 
-int read_binary_front();
-
+int read_sharp();
 
 #endif // SENSORS_H

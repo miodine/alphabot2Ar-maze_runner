@@ -119,9 +119,9 @@ int read_lrange_binary_right(){
 }
 
 
-int read_binary_front(){
-  PCF8574Write(0xC0 | PCF8574Read());   //set Pin High
-  value = PCF8574Read() | 0x3F; //read 
-  if(value != 0xFF) return 1;
-  else return 0;
+int read_sharp()
+{
+  return digitalRead(SHARP);
 }
+
+

@@ -83,65 +83,93 @@ void m_ninety_right()
 {
   m_right();
   delay(290); //adjust
+  m_stop();
 }
 
 void m_ninety_left()
 {
-  m_right();
+  m_left();
   delay(290); //adjust
+  m_stop();
 }
 
 void m_follow_segment()
 {
   m_forward();
 
+  int sp_left = 30;
+  int sp_right = 30;
+  int readout_left = 0;
+  int readout_right = 0;
 
   while (1)
   {
+    
+    readout_left = read_srange_analog_left();
+    readout_right = read_srange_analog_right();
 
     //CODE: compensation routines
 
+    if(readout_left < 600)
+    {
+      if(sp_left <40) sp_left += 2;
+      if(sp_right >20)sp_right -= 2;
+    }
+    else if(readout_right < 600)
+    {
+      if(sp_left >20) sp_left -= 2;
+      if(sp_right <40) sp_right += 2;
+    }
+    else 
+    {
+      sp_left = 30;
+      sp_right = 30;
+    }
+
+    SetSpeeds(sp_left, sp_right);
     
-    
-    if(read_binary_front() == 1) return;
-    if(read_lrange_binary_left() == 1) return;
-    if(read_lrange_binary_right() == 1) return; 
+
+
+    if((read_sharp() == 1) &&  (read_lrange_binary_left() == 0) && (read_lrange_binary_right() == 0)) 
+    {
+      delay(100);
+      if( (read_lrange_binary_left() == 0) && (read_lrange_binary_right() == 0))
+      {
+        m_backward();
+        delay(300);
+        m_stop();
+        return;
+      }
+      
+    }
+    else if((read_lrange_binary_left() == 1) || (read_lrange_binary_right() == 1)) return;
   }
 }
 
 void m_turn(unsigned char dir)
 {
-  // if(millis() - lasttime >500)
   {
     switch (dir)
     {
     case 'L':
-      // Turn left.
-      //SetSpeeds(-100, 100);
-      //delay(190);
       m_ninety_left();
-      
       break;
     case 'R':
-      // Turn right.
-      //SetSpeeds(100, -100);
-      //delay(190);
       m_ninety_right();
-
       break;
-    case 'B':
-      // Turn around.
-      //SetSpeeds(100, -100);
-      //delay(400);
+    case 'B': {
       m_ninety_left();
       m_ninety_left();
       break;
+      }
+    
     case 'S':
-      // Don't do anything!
+      m_forward();
       break;
     }
   }
-  SetSpeeds(0, 0);
+
+  m_forward();
   // value = 0;
   //  while(value != 0xEF)  //wait button pressed
   //  {
@@ -150,7 +178,7 @@ void m_turn(unsigned char dir)
   //  }
   //Serial.write(dir);
   //Serial.println();
-  //lasttime = millis();
+  
 }
 
 unsigned char m_select_turn(unsigned char found_left, unsigned char found_straight, unsigned char found_right)
@@ -158,6 +186,7 @@ unsigned char m_select_turn(unsigned char found_left, unsigned char found_straig
   // Make a decision about how to m_turn.  The following code
   // implements a left-hand-on-the-wall strategy, where we always
   // m_turn as far to the left as possible.
+
   if (found_left)
     return 'L';
   else if (found_straight)

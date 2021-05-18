@@ -9,6 +9,9 @@
 
 #define ECHO 2          // ultrasonic echo
 #define TRIG 3          // ultrasonic trigger
+
+#define SHARP 3
+
 #define OLED_RESET 9    // OLED display reset pin
 #define OLED_SA0 8      // OLED display set pin
 #define PWMA 6          //Left Motor Speed pin (ENA)
@@ -28,6 +31,12 @@
 #define SH_RNG_ADC_RIGHT A4   //Short-range analogue IR sensor input pin - right side
 #define LO_RNG_B_LEFT 11       //Long-range binary IR sensor input pin - left side
 #define LO_RNG_B_RIGHT 10      //Long-range binary IR sensor input pin - right side
+
+
+
+// compensation
+
+
 
 
 extern Adafruit_NeoPixel RGB;
