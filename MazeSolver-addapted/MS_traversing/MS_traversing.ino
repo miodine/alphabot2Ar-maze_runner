@@ -13,7 +13,7 @@ void setup()
 {
   delay(3000);
   Serial.begin(115200);
-  Speed = 30;
+  Speed = 35;
   
   Wire.begin();
   delay(1000);
@@ -50,6 +50,7 @@ void loop()
 
     dir = m_select_turn(found_left, found_straight, found_right);
 
+    if(found_right) dir = 'R';
 
     if(!found_left && !found_right && !found_straight)
     {
@@ -61,8 +62,8 @@ void loop()
     m_turn(dir);
 
     //Podjedz troche, żeby nie łapać poprzednich odczytów.
-    SetSpeeds(30, 30);
-    delay(1200);
+    SetSpeeds(45, 45);
+    delay(700);
     
 
 

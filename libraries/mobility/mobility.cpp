@@ -97,33 +97,36 @@ void m_follow_segment()
 {
   m_forward();
 
-  int sp_left = 30;
-  int sp_right = 30;
+  int sp_left = Speed;
+  int sp_right = Speed;
   int readout_left = 0;
   int readout_right = 0;
 
   while (1)
   {
-    
     readout_left = read_srange_analog_left();
     readout_right = read_srange_analog_right();
 
-    //CODE: compensation routines
 
+
+    
+
+    //CODE: compensation routines
+  
     if(readout_left < 600)
     {
-      if(sp_left <40) sp_left += 2;
-      if(sp_right >20)sp_right -= 2;
+      if(sp_left <(Speed+10)) sp_left += 2;
+      if(sp_right >(Speed -10)) sp_right -= 2;
     }
     else if(readout_right < 600)
     {
-      if(sp_left >20) sp_left -= 2;
-      if(sp_right <40) sp_right += 2;
+      if(sp_left >(Speed - 10)) sp_left -= 2;
+      if(sp_right <(Speed +10)) sp_right += 2;
     }
     else 
     {
-      sp_left = 30;
-      sp_right = 30;
+      sp_left = Speed;
+      sp_right = Speed;
     }
 
     SetSpeeds(sp_left, sp_right);
@@ -135,9 +138,6 @@ void m_follow_segment()
       delay(100);
       if( (read_lrange_binary_left() == 0) && (read_lrange_binary_right() == 0))
       {
-        m_backward();
-        delay(300);
-        m_stop();
         return;
       }
       
@@ -168,8 +168,6 @@ void m_turn(unsigned char dir)
       break;
     }
   }
-
-  m_forward();
   // value = 0;
   //  while(value != 0xEF)  //wait button pressed
   //  {
