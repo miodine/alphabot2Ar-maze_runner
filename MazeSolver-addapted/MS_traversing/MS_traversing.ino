@@ -21,6 +21,10 @@ int left_speed = 40;
 int right_speed = 40;
 int readout_left = 0;
 int readout_right = 0;
+char readout_bottom_left = 0;
+char readout_bottom_right = 0;
+
+int delay_value = 700;
 
 
 int IR1 = 0;
@@ -55,6 +59,11 @@ int read_detector_front()
 void compensate() {
     readout_left = read_compensator_left();
     readout_right = read_compensator_right();
+    readout_bottom_left = read_infrared(false);
+    readout_bottom_right = read_infrared(false);
+
+
+
 
     if((readout_left == LOW) && (readout_right == LOW))
     {
@@ -63,16 +72,16 @@ void compensate() {
     }
 
 
-    if(readout_left == LOW)
+    if((readout_left == LOW) || (readout_bottom_left == 'L'))
     {
-      if(left_speed <(Speed+10)) left_speed += 5;
-      if(right_speed >(Speed -10)) right_speed -= 5;
+      if(left_speed <(Speed+10)) left_speed += 10;
+      if(right_speed >(Speed -10)) right_speed -= 10;
     }
     
-    else if(readout_right == LOW)
+    else if((readout_right == LOW) || (readout_bottom_left == 'R') )
     {
-      if(left_speed >(Speed - 10)) left_speed -= 5;
-      if(right_speed <(Speed +10)) right_speed += 5;
+      if(left_speed >(Speed - 10)) left_speed -= 10;
+      if(right_speed <(Speed +10)) right_speed += 10;
     }
 
     else 
@@ -153,7 +162,7 @@ void loop()
     {
     compensate();
     m_forward();
-    compensate();
+    
     //serial_print(1);
     }
 
@@ -163,19 +172,12 @@ void loop()
     {
     //serial_print(2);
     
+    
     m_ninety_left();
     compensate();
     m_forward();
     compensate();
-
-    delay(250);
-    compensate();
-    delay(250);
-    compensate();
-    delay(250);
-    compensate();
-    delay(250);
-    compensate();
+    delay(delay_value);
     }
 
   compensate();
@@ -188,14 +190,7 @@ void loop()
       compensate();
       m_forward();
       compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
+      delay(delay_value);
     }
 
   compensate();
@@ -207,14 +202,7 @@ void loop()
       compensate();
       m_forward();
       compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
+      delay(delay_value);
     }
 
   compensate();
@@ -225,14 +213,7 @@ void loop()
       compensate();
       m_forward();
       compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
+      delay(delay_value);
     }
 
   compensate();
@@ -242,14 +223,7 @@ void loop()
      compensate();
      m_forward();//As Straight path is possible
     compensate();
-     delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
-      delay(250);
-      compensate();
+     delay(delay_value);
     }
 
   compensate();
@@ -270,9 +244,7 @@ void loop()
     {
      m_forward();
       compensate();
-     delay(250);
-      compensate();
-      delay(250);
+     delay(0.5*delay_value);
       compensate();
      m_stop();
 
@@ -282,7 +254,7 @@ void loop()
         }
      else
         {
-          compensate();
+        compensate();
          m_left();
          compensate();
         }
