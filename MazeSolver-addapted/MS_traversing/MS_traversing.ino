@@ -16,22 +16,64 @@ unsigned char found_right;
 
 unsigned char dir;
 
-bool is_turning = false;
+int is_turning = 0;
+// 1 - lewo
+// 2 - prawo 
 
 
-int left_speed = 40;
-int right_speed = 40;
+
+int left_speed = 30;
+int right_speed = 30;
 int readout_left = 0;
 int readout_right = 0;
 char readout_bottom_left = 0;
 char readout_bottom_right = 0;
 
-int delay_value = 1000;
-
+int delay_value = 1500;
+const int delta_speed = 10; 
+const int delta_compensation = 5;
 
 int IR1 = 0;
 int IR2 = 0;
 int IR3 = 0;
+
+void hold_at_turn(int direction){
+  // 1 - lewo
+// 2 - prawo 
+  switch(direction)
+  {
+    case 1:
+    {
+      while(true)
+      {
+
+        compensate();
+        if(read_detector_left() == LOW)
+        {
+
+          break;
+        } 
+
+
+      }
+    }
+    break;
+    case 2:
+    {
+      while(true)
+      {
+        compensate();
+        if(read_detector_right() == LOW) break;
+      }
+    }
+
+    break;
+
+
+  }
+
+
+}
 
 
 
@@ -54,8 +96,8 @@ int read_detector_right(){
 
 int read_detector_front()
 {
-  if(read_infrared(false) == 'B') return 0; // if no sensor detects an obstacle, return 1
-  else return 1;
+  if(read_infrared(false) == 'N') return 1; // if no sensor detects an obstacle, return 1
+  else return 0;
 }
 
 void compensate() {
@@ -63,9 +105,6 @@ void compensate() {
     readout_right = read_compensator_right();
     readout_bottom_left = read_infrared(false);
     readout_bottom_right = read_infrared(false);
-
-
-
 
     if((readout_left == LOW) && (readout_right == LOW))
     {
@@ -76,14 +115,14 @@ void compensate() {
 
     if(readout_left == LOW)
     {
-      if(left_speed <(Speed+10)) left_speed += 2;
-      if(right_speed >(Speed -10)) right_speed -= 2;
+      if(left_speed <(Speed+delta_speed)) left_speed += delta_compensation;
+      if(right_speed >(Speed -delta_speed)) right_speed -= delta_compensation;
     }
     
     else if(readout_right == LOW )
     {
-      if(left_speed >(Speed - 10)) left_speed -= 2;
-      if(right_speed <(Speed +10)) right_speed += 2;
+      if(left_speed >(Speed - delta_speed)) left_speed -= delta_compensation;
+      if(right_speed <(Speed +delta_speed)) right_speed += delta_compensation;
     }
 
     else 
@@ -176,8 +215,10 @@ void loop()
     
     m_ninety_left();
     m_forward();
+
     compensate();
-    delay(delay_value);
+    hold_at_turn(1);
+
     }
 
   compensate();
@@ -189,7 +230,8 @@ void loop()
       m_ninety_right();
       m_forward();
       compensate();
-      delay(delay_value);
+      hold_at_turn(2);
+      m_forward();
       compensate();
     }
 
@@ -202,7 +244,8 @@ void loop()
       compensate();
       m_forward();
       compensate();
-      delay(delay_value);
+      hold_at_turn(1);
+      m_forward();
     }
 
   compensate();
@@ -213,7 +256,8 @@ void loop()
       compensate();
       m_forward();
       compensate();
-      delay(delay_value);
+      hold_at_turn(1);
+      m_forward();
     }
 
   compensate();
@@ -235,7 +279,7 @@ void loop()
      compensate();
      m_forward();
      compensate();
-
+      
     }
 
   compensate();
@@ -257,7 +301,8 @@ void loop()
          m_ninety_left();
          m_forward();
          compensate();
-         delay(delay_value);
+         hold_at_turn(1);
+        m_forward();
         }
     }
 }
