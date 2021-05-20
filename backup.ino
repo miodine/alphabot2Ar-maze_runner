@@ -58,12 +58,13 @@ int read_detector_front()
   else return 0;
 }
 
-void compensate()
-{
+void compensate() {
     readout_left = read_compensator_left();
     readout_right = read_compensator_right();
     readout_bottom_left = read_infrared(false);
     readout_bottom_right = read_infrared(false);
+
+
 
 
     if((readout_left == LOW) && (readout_right == LOW))
@@ -71,6 +72,7 @@ void compensate()
       SetSpeeds(Speed, Speed);
       return;
     }
+
 
     if(readout_left == LOW)
     {
@@ -148,10 +150,6 @@ void setup()
 
   SetSpeeds(0, 0);
   value = 0;
-
-
-  attachInterrupt(digitalPinToInterrupt(COMPENSATION_LEFT), compensate, LOW);
-  attachInterrupt(digitalPinToInterrupt(COMPENSATION_RIGHT), compensate, LOW);
 }
 
 void loop()
@@ -164,77 +162,90 @@ void loop()
   
   if (IR1 == LOW && IR2 == HIGH && IR3 == LOW)//Straight path
     {
+    compensate();
     m_forward();
-    serial_print(1);
+    
+    //serial_print(1);
     }
+
+  compensate();
 
   if (IR1 == HIGH && IR2 == LOW && IR3 == LOW)//Left turn
     {
-    serial_print(2);
+    //serial_print(2);
+    
     m_ninety_left();
     m_forward();
+    compensate();
     delay(delay_value);
     }
 
-  
+  compensate();
 
   if (IR1 == LOW && IR2 == LOW && IR3 == HIGH)//Right Turn
     {
-      serial_print(3);
-
+      //serial_print(3);
+      compensate();
       m_ninety_right();
       m_forward();
+      compensate();
       delay(delay_value);
+      compensate();
     }
 
-  
+  compensate();
 
   if (IR1 == HIGH && IR2 == LOW && IR3 == HIGH)//T Intersection
     {
-      serial_print(4);
+      //serial_print(4);
       m_ninety_left(); // As left is possible
+      compensate();
       m_forward();
+      compensate();
       delay(delay_value);
     }
 
-  
+  compensate();
 
   if (IR1 == HIGH && IR2 == HIGH && IR3 == LOW)//Left T Intersection
     {
-      serial_print(5);
       m_ninety_left();// As Left is possible
+      compensate();
       m_forward();
+      compensate();
       delay(delay_value);
     }
 
-  
+  compensate();
 
   if (IR1 == LOW && IR2 == HIGH && IR3 == HIGH)//Right T Tntersection
     {
-    serial_print(6);
      m_forward();//As Straight path is possible
+    compensate();
      delay(delay_value);
     }
 
-  
+  compensate();
 
   if (IR1 == LOW && IR2 ==LOW && IR3 == LOW)//Dead End
     {
-    serial_print(7);
      m_ninety_left(); //As no other direction is possible
      m_ninety_left();
      
+     compensate();
      m_forward();
+     compensate();
 
     }
 
+  compensate();
 
   if (IR1 == HIGH && IR2 == HIGH && IR3 == HIGH)
     {
      m_forward();
-      
+      compensate();
      delay((int)0.5*delay_value);
-      
+      compensate();
      m_stop();
 
      if (IR1 == HIGH && IR2 == HIGH && IR3 == HIGH)
@@ -245,7 +256,7 @@ void loop()
         {
          m_ninety_left();
          m_forward();
-         
+         compensate();
          delay(delay_value);
 
         }
