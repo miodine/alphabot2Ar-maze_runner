@@ -258,7 +258,6 @@ void loop()
          m_forward();
          compensate();
          delay(delay_value);
-
         }
     }
 }
