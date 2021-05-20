@@ -107,10 +107,6 @@ void m_follow_segment()
     readout_left = read_srange_analog_left();
     readout_right = read_srange_analog_right();
 
-
-
-    
-
     //CODE: compensation routines
   
     if(readout_left < 600)
