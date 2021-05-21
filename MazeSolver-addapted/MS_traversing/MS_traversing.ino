@@ -10,60 +10,81 @@
 
 
 
-unsigned char found_left;
-unsigned char found_straight;
-unsigned char found_right;
+unsigned char found_left; //DEPRECATED
+unsigned char found_straight; //DEPRECATED
+unsigned char found_right; //DEPRECATED
 
-unsigned char dir;
+unsigned char dir; //DEPRECATED
 
-int is_turning = 0;
+int is_turning = 0;  //DEPRECATED
 // 1 - lewo
 // 2 - prawo 
 
 
+int left_speed = 40; // BASE 'POWER' DELIVERED TO THE LEFT MOTOR -> FOR COMPENSATION
+int right_speed = 40; // BASE  'POWER' DELIVERED TO THE RIGHT MOTOR -> FOR COMPENSATION
 
-int left_speed = 30;
-int right_speed = 30;
 int readout_left = 0;
 int readout_right = 0;
+
 char readout_bottom_left = 0;
 char readout_bottom_right = 0;
 
-int delay_value = 1500;
-const int delta_speed = 10; 
-const int delta_compensation = 5;
+int delay_value = 1000;
+const int delta_speed = 10; //MAX DIFFERENCE IN POWER ON THE WHEELS
+const int delta_compensation = 5; //ADD/SUBTRACT VALUE IN COMPENSATION ( < delta_speed)
 
-int IR1 = 0;
-int IR2 = 0;
-int IR3 = 0;
+int IR1 = 0; // LEFT IR SENSOR
+int IR2 = 0; // FRONT IR SENSOR(S)
+int IR3 = 0; // RIGHT IR SENSOR
+
+/*
+* hold_at_turn assures that the robot will go straight after turning,
+* so that it could safely enter the corridor that it has selected
+* on intersection.
+*
+* The idea is - the corridor detector gives us HIGH state whenever an avalialbe 
+* path is detected, so the hold_at_turn simply waits for the corridor detector
+* (the binary IR sensors on the back of the platform) to give the LOW state again.
+*
+* @param direction - 1 (left) or 2 (right), depending on what type of turn has been performed
+*/
 
 void hold_at_turn(int direction){
-  // 1 - lewo
-// 2 - prawo 
-  switch(direction)
+
+
+  // the function is triggered AFTER the robot gets the m_forward() instruction
+  // so at this time, it is driving straight
+  
+  switch(direction) 
   {
-    case 1:
+    case 1: //if the robot turned left
     {
-      while(true)
+      while(true) //enter infinite loop, block execution of anything else, and repeat the following...
       {
-
-        compensate();
-        if(read_detector_left() == LOW)
+        compensate(); //compensate path trajectory -- NEEDS TO BE MODDED SO IT WOULD STICK TO THE RIGHT WALL!!!
+        if(read_detector_left() == LOW) // if detected LOW state...
         {
-
-          break;
+          delay(50); // wait for a bit to make sure it wasn't noise
+          if(read_detector_left() == LOW) break; // if not, then exit loop, which results in exiting from the function
         } 
 
 
       }
     }
     break;
-    case 2:
+
+
+    case 2: //if the robot turned right -- do the same thing, but waiting for readout from the other sensor xD
     {
-      while(true)
+      while(true) 
       {
         compensate();
-        if(read_detector_right() == LOW) break;
+        if(read_detector_right() == LOW) 
+        {
+          delay(50);
+          if(read_detector_right() == LOW) break;
+        }
       }
     }
 
@@ -75,63 +96,101 @@ void hold_at_turn(int direction){
 
 }
 
-
-
-
-int read_compensator_left(){
+/*
+* compensator = path trajectory compensation sensor (triggered LOW if detected)
+*/
+int read_compensator_left(){   
   return digitalRead(COMPENSATION_LEFT);
 }
 
+
+/*
+* compensator = path trajectory compensation sensor (triggered LOW if detected; short range IR)
+* -- right side
+*/
 int read_compensator_right(){
   return digitalRead(COMPENSATION_RIGHT);
 }
 
+/*
+* compensator = path trajectory compensation sensor (triggered LOW if detected; short range IR)
+* -- left side
+*/
 int read_detector_left(){
     return digitalRead(DETECTION_LEFT);
 }
 
+
+/*
+* detector = corridor detection sensor (long range IR)
+* --right side
+*/
 int read_detector_right(){
     return digitalRead(DETECTION_RIGHT);
 }
 
+
+/*
+* compensator = path trajectory compensation sensor (triggered LOW if detected)
+*/
 int read_detector_front()
 {
   if(read_infrared(false) == 'N') return 1; // if no sensor detects an obstacle, return 1
   else return 0;
 }
 
-void compensate() {
-    readout_left = read_compensator_left();
-    readout_right = read_compensator_right();
-    readout_bottom_left = read_infrared(false);
-    readout_bottom_right = read_infrared(false);
 
+/*
+* function for path trajectory compensation, for driving straight -  
+* it is based on short range IR sensors, and its operation
+* can be equated to 'n-position relay' - depending on the delta_compensation
+* and delta_speed parameters (eg if for delta_compensation = 5, and delta_speed = 15 -> the controller
+* is 3 position relay).  
+* TODO: improve, adjust, and utilise callback
+*/
+
+void compensate() {
+    //get readouts from the sensors
+    readout_left = read_compensator_left(); 
+    readout_right = read_compensator_right(); 
+    readout_bottom_left = read_infrared(false);
+
+
+    // do nothing if both sensors detect wall - for now xd
     if((readout_left == LOW) && (readout_right == LOW))
     {
       SetSpeeds(Speed, Speed);
       return;
     }
 
-
+    // if detected wall from the left:
     if(readout_left == LOW)
     {
+      // if the maximal allowed values do not exceed the constrains,
+      // increase the power delivered to the left wheel, 
+      // while decreasing the power delivered to the right wheel.
+
       if(left_speed <(Speed+delta_speed)) left_speed += delta_compensation;
       if(right_speed >(Speed -delta_speed)) right_speed -= delta_compensation;
     }
     
-    else if(readout_right == LOW )
+    else if(readout_right == LOW) // if detected wall from the right:
     {
+      // same thing, but increase right, decrease left
       if(left_speed >(Speed - delta_speed)) left_speed -= delta_compensation;
       if(right_speed <(Speed +delta_speed)) right_speed += delta_compensation;
     }
 
-    else 
+    else // if none of the sensors detect wall:
     {
+      //set default speed
       left_speed = Speed;
       right_speed = Speed;
     }
 
     SetSpeeds(left_speed, right_speed);
+
+
 }
 
 void serial_print(int value){
@@ -163,6 +222,8 @@ void serial_print(int value){
 
 void setup()
 {
+
+  //init
   delay(3000);
   Serial.begin(115200);
   Wire.begin();
@@ -193,11 +254,14 @@ void setup()
 
 void loop()
 {
+
+  //read values of th sensors 
   IR1 = read_detector_left();
   IR2 = read_detector_front();
   IR3 = read_detector_right();
 
 
+  //decide what to do:
   
   if (IR1 == LOW && IR2 == HIGH && IR3 == LOW)//Straight path
     {
@@ -215,8 +279,6 @@ void loop()
     
     m_ninety_left();
     m_forward();
-
-    compensate();
     hold_at_turn(1);
 
     }
@@ -266,7 +328,7 @@ void loop()
     {
      m_forward();//As Straight path is possible
     compensate();
-     delay(delay_value);
+     hold_at_turn(2);
     }
 
   compensate();
