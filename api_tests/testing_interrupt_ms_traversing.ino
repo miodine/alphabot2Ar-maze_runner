@@ -163,8 +163,6 @@ void loop()
     delay(delay_value);
     }
 
-  
-
   if (IR1 == LOW && IR2 == LOW && IR3 == HIGH)//Right Turn
     {
       //serial_print(3);

@@ -21,8 +21,8 @@ int is_turning = 0;  //DEPRECATED
 // 2 - prawo 
 
 
-int left_speed = 30; // BASE 'POWER' DELIVERED TO THE LEFT MOTOR -> FOR COMPENSATION
-int right_speed = 30; // BASE  'POWER' DELIVERED TO THE RIGHT MOTOR -> FOR COMPENSATION
+int left_speed = 40; // BASE 'POWER' DELIVERED TO THE LEFT MOTOR -> FOR COMPENSATION
+int right_speed = 40; // BASE  'POWER' DELIVERED TO THE RIGHT MOTOR -> FOR COMPENSATION
 
 int readout_left = 0;
 int readout_right = 0;
@@ -126,8 +126,8 @@ int read_detector_right(){
 */
 int read_detector_front()
 {
-  if(read_infrared(false) == 'B') return 0; // if no sensor detects an obstacle, return 1
-  else return 1;
+  if(read_infrared(false) == 'N') return 1; // if no sensor detects an obstacle, return 1
+  else return 0;
 }
 
 
@@ -220,7 +220,7 @@ void setup()
   Wire.begin();
 
 
-  Speed = 30;
+  Speed = 40;
   
   Wire.begin();
   delay(1000);

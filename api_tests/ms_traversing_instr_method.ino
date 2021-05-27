@@ -21,8 +21,8 @@ int is_turning = 0;  //DEPRECATED
 // 2 - prawo 
 
 
-int left_speed = 30; // BASE 'POWER' DELIVERED TO THE LEFT MOTOR -> FOR COMPENSATION
-int right_speed = 30; // BASE  'POWER' DELIVERED TO THE RIGHT MOTOR -> FOR COMPENSATION
+int left_speed = 40; // BASE 'POWER' DELIVERED TO THE LEFT MOTOR -> FOR COMPENSATION
+int right_speed = 40; // BASE  'POWER' DELIVERED TO THE RIGHT MOTOR -> FOR COMPENSATION
 
 int readout_left = 0;
 int readout_right = 0;
@@ -49,10 +49,12 @@ int IR3 = 0; // RIGHT IR SENSOR
 *
 * @param direction - 1 (left) or 2 (right), depending on what type of turn has been performed
 */
-
 void hold_at_turn(int direction){
   // the function is triggered AFTER the robot gets the m_forward() instruction
   // so at this time, it is driving straight
+
+  //unsigned long time_now = 0;
+
   switch(direction) 
   {
     case 1: //if the robot turned left
@@ -62,7 +64,7 @@ void hold_at_turn(int direction){
         compensate(); //compensate path trajectory -- NEEDS TO BE MODDED SO IT WOULD STICK TO THE RIGHT WALL!!!
         if(read_detector_left() == LOW) // if detected LOW state...
         {
-          delay(200); // wait for a bit to make sure it wasn't noise
+          delay(50);                      // wait for a bit to make sure it wasn't noise
           if(read_detector_left() == LOW) break; // if not, then exit loop, which results in exiting from the function
         } 
       }
@@ -76,15 +78,13 @@ void hold_at_turn(int direction){
         compensate();
         if(read_detector_right() == LOW) 
         {
-          delay(200);
+          delay(50);
           if(read_detector_right() == LOW) break;
         }
       }
     }
     break;
   }
-
-
 }
 
 /*
@@ -112,7 +112,7 @@ int read_detector_left(){
 }
 
 
-/*
+/**
 * detector = corridor detection sensor (long range IR)
 * --right side
 */
@@ -126,12 +126,12 @@ int read_detector_right(){
 */
 int read_detector_front()
 {
-  if(read_infrared(false) == 'B') return 0; // if no sensor detects an obstacle, return 1
-  else return 1;
+  if(read_infrared(false) == 'N') return 1; // if no sensor detects an obstacle, return 1
+  else return 0;
 }
 
 
-/*
+/**
 * function for path trajectory compensation, for driving straight -  
 * it is based on short range IR sensors, and its operation
 * can be equated to 'n-position relay' - depending on the delta_compensation
@@ -139,7 +139,6 @@ int read_detector_front()
 * is 3 position relay).  
 * TODO: improve, adjust, and utilise callback
 */
-
 void compensate() {
     //get readouts from the sensors
     readout_left = read_compensator_left(); 
@@ -220,7 +219,7 @@ void setup()
   Wire.begin();
 
 
-  Speed = 30;
+  Speed = 40;
   
   Wire.begin();
   delay(1000);
@@ -243,6 +242,142 @@ void setup()
   value = 0;
 }
 
+void mobility_response_to_readouts(int IR1, int IR2, int IR3){
+    if (IR1 == LOW && IR2 == HIGH && IR3 == LOW)//Straight path
+    {
+    m_forward();
+    compensate();
+    //serial_print(1);
+    }
+
+
+  if (IR1 == HIGH && IR2 == LOW && IR3 == LOW)//Left turn
+    {
+    //serial_print(2);
+
+    delay(50);   // assuming that it is moving - keep it that way for a fraction of a second
+    m_stop();    // ... then stop the robot 
+    delay(50);   // ... then combat inertia with waiting xD
+
+
+    m_ninety_left(); //90 degree turn; afterwards the robot stops...
+    delay(100);      // ... and it would be good to combat the inertia again XD 
+    
+    m_forward();     // then, go forward
+    hold_at_turn(1); // hold 'state' at turn; the robot is still driving straight
+    compensate();    // after it detects that it's in the corridor again - start compensation
+    }
+
+
+  if (IR1 == LOW && IR2 == LOW && IR3 == HIGH)//Right Turn
+    {
+      //serial_print(3);
+
+      // same spiel as previously
+      delay(50);
+      m_stop();
+      delay(50);
+
+      m_ninety_right();
+      delay(100);
+
+      m_forward();
+      hold_at_turn(2);
+      compensate();
+    }
+
+
+    
+  if (IR1 == HIGH && IR2 == LOW && IR3 == HIGH)//T Intersection
+    {
+      //serial_print(4);
+      delay(50);
+      m_stop();
+      delay(50);
+
+      m_ninety_left(); // As left is possible
+      delay(100);
+
+      m_forward();
+      hold_at_turn(1);
+      compensate();
+    }
+    
+
+
+  if (IR1 == HIGH && IR2 == HIGH && IR3 == LOW)//Left T Intersection
+    {
+      delay(50);
+      m_stop();
+      delay(50);
+
+      m_ninety_left();// As Left is possible
+      delay(100);
+
+
+      m_forward();
+      hold_at_turn(1);
+      compensate();
+    }
+    
+
+  if (IR1 == LOW && IR2 == HIGH && IR3 == HIGH)//Right T Tntersection
+    {
+    
+    m_forward();//As Straight path is possible
+    hold_at_turn(2); //we are still waiting for the robot to get out of the 
+    //compensate();  // DO NOT compensate trajectory after we entered 
+    
+    }
+
+
+  if (IR1 == LOW && IR2 ==LOW && IR3 == LOW)//Dead End
+    {
+
+    delay(50);
+    m_stop();
+    delay(50);
+
+    m_ninety_left(); //As no other direction is possible
+    m_ninety_left();
+    m_stop();
+    delay(100);
+
+    m_forward();
+    compensate();
+    }
+
+ 
+
+  if (IR1 == HIGH && IR2 == HIGH && IR3 == HIGH)
+    {
+    m_forward();
+    compensate();
+    delay((int)(0.5*delay_value));
+    
+
+    m_stop();
+
+     if (IR1 == HIGH && IR2 == HIGH && IR3 == HIGH)
+        {
+          m_stop();
+        }
+     else
+        {
+        
+         m_ninety_left();
+         delay(100);
+
+         m_forward();
+         compensate();
+         hold_at_turn(1);
+        }
+    }
+}
+
+
+
+
 void loop()
 {
 
@@ -253,111 +388,9 @@ void loop()
 
 
   //decide what to do:
+  mobility_response_to_readouts(IR1, IR2, IR3);
   
-  if (IR1 == LOW && IR2 == HIGH && IR3 == LOW)//Straight path
-    {
-    compensate();
-    m_forward();
-    
-    //serial_print(1);
-    }
-
-  compensate();
-
-  if (IR1 == HIGH && IR2 == LOW && IR3 == LOW)//Left turn
-    {
-    //serial_print(2);
-    
-    m_ninety_left();
-    m_forward();
-    hold_at_turn(1);
-
-    }
-
-  compensate();
-
-  if (IR1 == LOW && IR2 == LOW && IR3 == HIGH)//Right Turn
-    {
-      //serial_print(3);
-      compensate();
-      m_ninety_right();
-      m_forward();
-      compensate();
-      hold_at_turn(2);
-      m_forward();
-      compensate();
-    }
-
-  compensate();
-
-  if (IR1 == HIGH && IR2 == LOW && IR3 == HIGH)//T Intersection
-    {
-      //serial_print(4);
-      m_ninety_left(); // As left is possible
-      compensate();
-      m_forward();
-      compensate();
-      hold_at_turn(1);
-      m_forward();
-    }
-
-  compensate();
-
-  if (IR1 == HIGH && IR2 == HIGH && IR3 == LOW)//Left T Intersection
-    {
-      m_ninety_left();// As Left is possible
-      compensate();
-      m_forward();
-      compensate();
-      hold_at_turn(1);
-      m_forward();
-    }
-
-  compensate();
-
-  if (IR1 == LOW && IR2 == HIGH && IR3 == HIGH)//Right T Tntersection
-    {
-     m_forward();//As Straight path is possible
-    compensate();
-     hold_at_turn(2);
-    }
-
-  compensate();
-
-  if (IR1 == LOW && IR2 ==LOW && IR3 == LOW)//Dead End
-    {
-     m_ninety_left(); //As no other direction is possible
-     m_ninety_left();
-     
-     compensate();
-     m_forward();
-     compensate();
-      
-    }
-
-  compensate();
-
-  if (IR1 == HIGH && IR2 == HIGH && IR3 == HIGH)
-    {
-     m_forward();
-      compensate();
-     delay((int)0.5*delay_value);
-      compensate();
-     m_stop();
-
-     if (IR1 == HIGH && IR2 == HIGH && IR3 == HIGH)
-        {
-          m_stop();
-        }
-     else
-        {
-         m_ninety_left();
-         m_forward();
-         compensate();
-         hold_at_turn(1);
-        m_forward();
-        }
-    }
+  
 }
 
 
