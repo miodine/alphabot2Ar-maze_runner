@@ -242,7 +242,8 @@ void setup()
   value = 0;
 }
 
-void mobility_response_to_readouts(int IR1, int IR2, int IR3){
+void mobility_response_to_readouts(int IR1, int IR2, int IR3)
+{
     if (IR1 == LOW && IR2 == HIGH && IR3 == LOW)//Straight path
     {
     m_forward();
@@ -376,8 +377,6 @@ void mobility_response_to_readouts(int IR1, int IR2, int IR3){
 }
 
 
-
-
 void loop()
 {
 
@@ -386,10 +385,8 @@ void loop()
   IR2 = read_detector_front();
   IR3 = read_detector_right();
 
-
   //decide what to do:
   mobility_response_to_readouts(IR1, IR2, IR3);
-  
   
 }
 

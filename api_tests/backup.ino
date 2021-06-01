@@ -173,7 +173,6 @@ void loop()
   if (IR1 == HIGH && IR2 == LOW && IR3 == LOW)//Left turn
     {
     //serial_print(2);
-    
     m_ninety_left();
     m_forward();
     compensate();
