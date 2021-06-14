@@ -4,6 +4,7 @@
 #define COMPENSATION_LEFT 2      // sensor for path trajectory compensation - pin  
 #define COMPENSATION_RIGHT 3     // sensor for path trajectory compensation - pin     
 
+
 #define DETECTION_FRONT A5      //DEPRECATED - SHARP PIN
 #define DETECTION_LEFT 11       //Long-range binary IR sensor input pin - left side
 #define DETECTION_RIGHT 10      //Long-range binary IR sensor input pin - right side
