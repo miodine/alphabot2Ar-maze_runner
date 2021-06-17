@@ -23,6 +23,17 @@ int delay_value = 80;
 const int delta_speed = 10;       //MAX DIFFERENCE IN POWER ON THE WHEELS
 const int delta_compensation = 1; //ADD/SUBTRACT VALUE IN COMPENSATION ( < delta_speed)
 
+
+
+
+unsigned long current_time = 0;
+unsigned long prev_time = 0;
+unsigned long stuck_interval = 1000;
+
+char stuck_marker = 0;
+bool stuck_flag = false;
+
+
 bool is_wall_left_back(){
     if(digitalRead(DETECTION_LEFT)==0) return true;
     else return false;
@@ -73,12 +84,6 @@ void compensate() {
  
 }
 
-
-int read_detector_bottom_front()
-{
-  if(read_infrared(false) == 'N') return 1; // if no sensor detects an obstacle, return 1
-  else return 0;
-}
 
 
 void setup()
@@ -145,6 +150,40 @@ if(iw_left)
   {
     compensate();
     SetSpeeds(left_speed,right_speed);
+    
+
+    // read state of the front bottom sensors
+    stuck_marker = read_infrared(false);
+    
+    // if while going straight - either left or right
+    // detects a signal 
+    if((stuck_marker == 'L') || (stuck_marker == 'R')){
+        
+        // mark current time 
+        if(!stuck_flag) prev_time = millis();
+        
+        // mark that the robot is stuck
+        stuck_flag = true;
+
+        //get current time
+        current_time = millis();
+
+
+        // if the difference between time when it became stuck
+        // to the current time is greater than the predefined interval
+        if(current_time - prev_time >= stuck_interval)
+        {
+            // it means that it is acutally stuck and needs to drive back xd
+            m_backward();
+            delay(500);
+            stuck_flag = false;
+        }
+    }
+
+    // if during that waiting process, the signal disappears
+    // set the stuck flag to false, because it means that it is not stuck
+    if(stuck_marker == 'N') stuck_flag = false;
+
   }
 }
 

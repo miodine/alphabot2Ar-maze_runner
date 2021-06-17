@@ -19,31 +19,36 @@ int readout_left_compensate = 0;
 bool iw_left = false;              // iw = is wall (present) -> readout memory placeholder
 bool iw_front = false;             // same as above
 
-int delay_value = 80;
-const int delta_speed = 10;       //MAX DIFFERENCE IN POWER ON THE WHEELS
-const int delta_compensation = 1; //ADD/SUBTRACT VALUE IN COMPENSATION ( < delta_speed)
+int delay_value = 80;             // delay for 'driving forward' after detecting missing wall
+const int delta_speed = 10;       // MAX DIFFERENCE IN POWER ON THE WHEELS
+const int delta_compensation = 1; // ADD/SUBTRACT VALUE IN COMPENSATION ( < delta_speed)
 
+
+// se
 bool is_wall_left_back(){
     if(digitalRead(DETECTION_LEFT)==0) return true;
     else return false;
 }
 
+// se
 bool is_wall_left_front()
 {
   if(digitalRead(COMPENSATION_CONDITIONAL_LEFT)==0) return true;
     else return false; 
 }
-
+// se
 bool is_wall_front(){
     if(digitalRead(DETECTION_FRONT)==0) return true;
     else return false;
 }
 
+
+// se
 int read_compensator_left(){
   return analogRead(COMPENSATION_LEFT);
 }
 
-
+// compensate path trajectory, 2 pos relay with deadzone type control
 void compensate() {
     readout_left_compensate = read_compensator_left(); 
     
@@ -78,7 +83,7 @@ void compensate() {
 
 void setup()
 {
-  Speed = 40; //PE: possible lag - change if necessary
+  Speed = 40; 
 
   delay(3000);
   Serial.begin(115200);
