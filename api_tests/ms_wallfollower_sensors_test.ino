@@ -7,8 +7,8 @@
 
 #define COMPENSATION_LEFT A4 // sensor for path trajectory compensation analog value
 
-#define DETECTION_LEFT 11 // binary IR sensor right
-#define DETECTION_FRONT 2  // binary IR sensor front
+#define DETECTION_LEFT 12  // binary IR sensor right
+#define DETECTION_FRONT 3  // binary IR sensor front
 
 
 #define WALL_TOO_FAR   500
@@ -71,11 +71,10 @@ void setup()
   value = 0;
 }
 
-void loop()
-{
+void loop(){
 
-iw_left = read_detector_left();              
-iw_front = read_detector_front();
+iw_left = is_wall_left();              
+iw_front = is_front_front();
 
 if(iw_left)
 {

@@ -18,12 +18,10 @@ int readout_left_compensate = 0;
 
 bool iw_left = false;              // iw = is wall (present) -> readout memory placeholder
 bool iw_front = false;             // same as above
-bool just_turned_left = false;     // state marker - if present move was to turn left?
 
 int delay_value = 80;
 const int delta_speed = 10;       //MAX DIFFERENCE IN POWER ON THE WHEELS
 const int delta_compensation = 1; //ADD/SUBTRACT VALUE IN COMPENSATION ( < delta_speed)
-
 
 bool is_wall_left_back(){
     if(digitalRead(DETECTION_LEFT)==0) return true;
@@ -40,7 +38,6 @@ bool is_wall_front(){
     if(digitalRead(DETECTION_FRONT)==0) return true;
     else return false;
 }
-
 
 int read_compensator_left(){
   return analogRead(COMPENSATION_LEFT);
@@ -77,13 +74,20 @@ void compensate() {
 }
 
 
+int read_detector_bottom_front()
+{
+  if(read_infrared(false) == 'N') return 1; // if no sensor detects an obstacle, return 1
+  else return 0;
+}
+
 
 void setup()
 {
-  Speed = 40;
+  Speed = 40; //PE: possible lag - change if necessary
 
   delay(3000);
   Serial.begin(115200);
+  Wire.begin();
 
   pinMode(PWMA, OUTPUT);
   pinMode(AIN2, OUTPUT);
@@ -105,19 +109,18 @@ void setup()
 }
 
 
+
 void loop()
 {
 
-iw_left = is_wall_left_back();              
-iw_front = is_wall_front();
+  iw_left = is_wall_left_back();              
+  iw_front = is_wall_front();
 
-if(!iw_left) // if no wall on the left
-{
-  delay(delay_value); //keep driving forward for a couple of seconds
-
-
+  if(!iw_left)
+  {
+  delay(delay_value); //keep driving forward for a while
   m_stop(); 
-  m_ninety_left(); // turn left
+  m_ninety_left();    // turn left
 
   SetSpeeds(Speed,Speed);
   while(!is_wall_left_back())
@@ -128,15 +131,22 @@ if(!iw_left) // if no wall on the left
      SetSpeeds(left_speed,right_speed);
    }
   }
-  
-  delay(10);
-
 }
-else
+
+if(iw_left)
 {
-  compensate();
-  SetSpeeds(left_speed, right_speed);
-  
+  if(iw_front)
+  {
+    m_stop();
+    m_ninety_right();
+    m_stop();
+  }
+  else
+  {
+    compensate();
+    SetSpeeds(left_speed,right_speed);
+  }
 }
 
 }
+
