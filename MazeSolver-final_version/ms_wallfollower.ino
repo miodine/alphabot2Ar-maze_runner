@@ -31,8 +31,7 @@ bool is_wall_left_back(){
 }
 
 // se
-bool is_wall_left_front()
-{
+bool is_wall_left_front(){
   if(digitalRead(COMPENSATION_CONDITIONAL_LEFT)==0) return true;
     else return false; 
 }
@@ -80,7 +79,7 @@ void compensate() {
 
 
 
-
+// MCU peripheral and interface setup
 void setup()
 {
   Speed = 40; 
@@ -102,20 +101,14 @@ void setup()
   pinMode(COMPENSATION_LEFT, INPUT);
   pinMode(COMPENSATION_CONDITIONAL_LEFT,INPUT);
 
-
-
   SetSpeeds(0, 0);
-  value = 0;
 }
 
-
-
+// Main program loop - wall follower algorithm
 void loop()
 {
-
   iw_left = is_wall_left_back();              
   iw_front = is_wall_front();
-
   if(!iw_left)
   {
   delay(delay_value); //keep driving forward for a while
